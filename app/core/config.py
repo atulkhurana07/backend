@@ -23,7 +23,7 @@ class Settings(BaseSettings):
     REDIS_URL: Optional[str] = None
 
     # CORS
-    CORS_ORIGINS: list[str] = ["http://localhost:5173", "http://localhost:3000"]
+    CORS_ORIGINS: list[str] = ["*"]
 
     # Server
     SERVER_HOST: str = "0.0.0.0"
