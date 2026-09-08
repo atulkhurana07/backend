@@ -278,7 +278,9 @@ async def run_migrations_and_seed():
             }
         ]
 
+        from simulator.route_shapes import get_bikaner_geojson
         for r_info in routes_data:
+            r_info["geometry"] = get_bikaner_geojson(r_info["code"])
             existing = await db.execute(select(Route).where(Route.code == r_info["code"]))
             route_obj = existing.scalar_one_or_none()
             if not route_obj:
@@ -288,9 +290,14 @@ async def run_migrations_and_seed():
                     city=r_info["city"],
                     state=r_info["state"],
                     description=r_info["description"],
-                    color=r_info["color"]
+                    color=r_info["color"],
+                    geometry=r_info.get("geometry")
                 )
                 db.add(route_obj)
+                await db.flush()
+            else:
+                route_obj.geometry = r_info.get("geometry")
+                route_obj.color = r_info["color"]
                 await db.flush()
 
             # Add Route Stops

@@ -43,3 +43,11 @@ class TestPublicAPI:
     async def test_public_help_contacts(self, client):
         resp = await client.get("/api/public/help-contacts")
         assert resp.status_code == 200
+
+    async def test_public_simulation_schedule_exposes_provenance(self, client):
+        resp = await client.get("/api/public/simulation/schedule")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["published_routes_status"] == "proposed"
+        assert data["timetable_status"] == "planning_scenario_not_official"
+        assert len(data["proposed_routes"]) == 25

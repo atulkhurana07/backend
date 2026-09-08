@@ -1,0 +1,96 @@
+{
+  "schema_version": "1.0",
+  "city": "Bikaner",
+  "timezone": "Asia/Kolkata",
+  "published_routes_status": "proposed",
+  "timetable_status": "planning_scenario_not_official",
+  "verified_on": "2026-09-09",
+  "disclaimer": "The 25 corridors were publicly reported as proposed. No authoritative public stop-level timetable or GTFS feed was located. Scenario times below are for product demonstration and must not be shown as official passenger information.",
+  "sources": [
+    {
+      "title": "PM e-Bus Sewa - Government of India",
+      "url": "https://pm-ebus-sewa.mohua.gov.in/"
+    },
+    {
+      "title": "Bikaner proposed 25-route chart - Abhay India, 12 August 2026",
+      "url": "https://abhayindia.com/bikaner-may-receive-the-gift-of-the-pm-e-bus-service-on-independence-day-check-out-the-25-proposed-routes/"
+    },
+    {
+      "title": "Bikaner launch report; official route and timetable information awaited - Aapni Awaj, 15 August 2026",
+      "url": "https://aapniawaj.com/news/bikaner-electric-bus-service-cm-bhajanlal-sharma-flag-off.php"
+    }
+  ],
+  "proposed_routes": [
+    {"number": 1, "via": ["MGS University", "Karmisar Tiraha", "Kothari Hospital", "Urmul Circle", "Bus Stand", "IGNP/RAC", "RTO", "Khara"]},
+    {"number": 2, "via": ["MGS University", "Nal", "Karmisar", "Dudi Petrol Pump", "Gokul Circle", "Meteorological Department"]},
+    {"number": 3, "via": ["MGS University", "Karmisar", "Pugal Phanta", "Pugal Mandi", "Karni Industrial Area", "Shobhasar"]},
+    {"number": 4, "via": ["MGS University", "Kothari Hospital", "Urmul Circle", "Museum Circle", "Sophia", "Haldiram", "Jodhpur Bypass"]},
+    {"number": 5, "via": ["Khara", "Beechwal Village", "Bus Stand", "Bhimsain Circle", "Museum Circle", "Medical College", "Shani Mandir", "Nagnechi", "Industrial Area", "Ghadsisar"]},
+    {"number": 6, "via": ["MGS University", "Kothari Hospital", "Urmul Circle", "Museum Circle", "Ambedkar Circle", "Rani Bazar", "Gogagate", "Bhinasar", "Deshnoke"]},
+    {"number": 7, "via": ["BTU", "Pugal Road Overbridge", "Pugal Mandi", "Pugal Phanta", "Bhimsain Circle", "Museum Circle", "Panchshati Circle", "Murti Circle", "JNV"]},
+    {"number": 8, "via": ["BTU", "Pugal Mandi", "Pugal Phanta", "Dudi Petrol Pump", "Naya Shahar", "Gokul Circle", "Murlidhar", "Karmisar", "MGS University"]},
+    {"number": 9, "via": ["Muktaprasad RHB", "Sarvodaya Basti", "Dharamkanta", "Kirti Stambh", "Junagarh Road", "Sadul Singh Circle"]},
+    {"number": 10, "via": ["MGS University", "Karmisar", "Murlidhar", "Meteorological Department", "Shriramsar", "Sujandesar"]},
+    {"number": 11, "via": ["PBM Hospital", "Rani Bazar", "Ghadsisar", "Jaipur Bypass", "Mangalam Colony", "Udaramsar"]},
+    {"number": 12, "via": ["Arya Hospital", "Nagnechi Temple", "Medical College", "Brahma Kumari Circle", "Purn Singh Circle", "Museum Circle"]},
+    {"number": 13, "via": ["Ghadsisar", "Jain College", "KG Complex", "Chopra Katla", "Rani Bazar", "Ambedkar Circle", "PBM Hospital", "Panchshati Circle", "JNV", "D-Mart", "Ridmalsar"]},
+    {"number": 14, "via": ["Camel Farm", "Shivbari", "Patel Nagar", "Shani Mandir", "Duplex Colony", "Ambedkar Circle", "PBM Hospital"]},
+    {"number": 15, "via": ["Urmul Circle", "Museum Circle", "Haldiram", "Sagar", "Ridmalsar", "Gadhwala", "Napasar"]},
+    {"number": 16, "via": ["Lalgarh Railway Station", "Krishi Mandi/Bus Stand", "Bhimsain Circle", "Kirti Stambh", "Junagarh"]},
+    {"number": 17, "via": ["Railway Station Gate 2", "Bothra Complex", "Agrasen Circle", "Tulsi Circle", "Ambedkar Circle", "Panchshati Circle", "Gautam Circle", "Law College", "JNV", "Ashok Nagar"]},
+    {"number": 18, "via": ["Udasar Panchayat", "Udasar Phanta", "Panchayat Samiti", "RSV School", "Hemu Circle", "Law College", "Panchshati Circle", "PBM Hospital"]},
+    {"number": 19, "via": ["Rajiv Gandhi Marg", "Railway Station", "Rani Bazar", "Suraj Talkies", "Medical College", "Shani Mandir", "Nagnechi", "Arya Hospital"]},
+    {"number": 20, "via": ["RTO", "Beechwal Industrial Area", "Private Bus Stand", "Karni Nagar", "Sub Registrar", "Veterinary University", "Deendayal Circle", "MN Hospital", "Junagarh", "PBM Hospital"]},
+    {"number": 21, "via": ["Murlidhar", "Parshuram Dwar", "Gokul Circle", "MM Ground", "Jassusar Gate", "Kothari Hospital", "Dharamkanta", "Muktaprasad"]},
+    {"number": 22, "via": ["Udasar Village", "Bhinasar Phanta", "Gaushala", "Jain PG College", "Jain School", "Gopeshwar", "Mohta Sarai", "Sheetla Gate", "Shriramsar"]},
+    {"number": 23, "via": ["MGS University", "Karmisar", "Pugal Phanta", "Dharamkanta", "Taneja Store", "Krishna Petrol Pump", "Pugal Mandi", "Engineering College"]},
+    {"number": 24, "via": ["Main Mandi", "Bus Stand", "Urmul Circle", "Museum Circle", "Ambedkar Circle", "Rani Bazar", "Gogagate", "Jain School", "Kochar Circle", "Kumharon Ka Mod", "Mahavir Chowk"]},
+    {"number": 25, "via": ["Mahavir Chowk", "Kumharon Ka Mod", "Kochar Circle", "Jain PG College", "CineMagic", "Road No. 5", "KG Complex", "Chopra Katla", "Rani Bazar Bridge", "PBM Hospital"]}
+  ],
+  "simulation_routes": {
+    "BKN-L1": {
+      "label": "North-South planning corridor",
+      "route_status": "scenario",
+      "source_route_numbers": [5, 6],
+      "service_start": "06:30",
+      "service_end": "21:30",
+      "one_way_runtime_minutes": 58,
+      "terminal_layover_minutes": 8,
+      "distance_km": 25.8,
+      "vehicles": {"BUS-101": 0, "BUS-102": 33}
+    },
+    "BKN-L2": {
+      "label": "Railway-JNV planning corridor",
+      "route_status": "scenario",
+      "source_route_numbers": [17],
+      "service_start": "06:45",
+      "service_end": "21:15",
+      "one_way_runtime_minutes": 38,
+      "terminal_layover_minutes": 6,
+      "distance_km": 12.6,
+      "vehicles": {"BUS-201": 0}
+    },
+    "BKN-L3": {
+      "label": "PBM-Deshnoke planning corridor",
+      "route_status": "scenario",
+      "source_route_numbers": [6],
+      "service_start": "06:15",
+      "service_end": "21:45",
+      "one_way_runtime_minutes": 75,
+      "terminal_layover_minutes": 10,
+      "distance_km": 31.4,
+      "vehicles": {"BUS-301": 15}
+    },
+    "BKN-L4": {
+      "label": "Lalgarh-JNV planning corridor",
+      "route_status": "scenario",
+      "source_route_numbers": [16, 17],
+      "service_start": "07:00",
+      "service_end": "21:00",
+      "one_way_runtime_minutes": 35,
+      "terminal_layover_minutes": 6,
+      "distance_km": 11.4,
+      "vehicles": {"BUS-401": 0}
+    }
+  }
+}

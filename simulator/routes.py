@@ -120,3 +120,15 @@ ROUTES = [
         (28.0150, 73.3320), (28.0085, 73.3385), (28.0020, 73.3450)
     ]
 ]
+
+# Replace the four coarse Bikaner waypoint paths with cached OSRM/OpenStreetMap
+# road shapes. The original arrays remain a safe offline fallback.
+try:
+    from simulator.route_shapes import get_bikaner_simulator_points
+
+    for _route_index, _route_code in enumerate(("BKN-L1", "BKN-L2", "BKN-L3", "BKN-L4"), start=14):
+        _road_points = get_bikaner_simulator_points(_route_code)
+        if len(_road_points) >= 2:
+            ROUTES[_route_index] = _road_points
+except (OSError, ValueError, KeyError):
+    pass

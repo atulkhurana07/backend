@@ -2,8 +2,10 @@ import random
 import math
 import uuid
 from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
 from simulator.config import VehicleConfig, INTERVAL_SECONDS
 from simulator.routes import ROUTES
+from simulator.schedules import get_route_schedule
 
 
 def haversine_km(lat1, lon1, lat2, lon2):
@@ -37,59 +39,93 @@ class VehicleSimulator:
         self.seq = 0
         self.direction = 1  # 1 = forward, -1 = reverse along route
         self.stop_timer = 0
+        self.current_position = self.route[0] if self.route else (0.0, 0.0)
         
         # Position bus according to current real-world schedule timing
         self.sync_to_schedule()
 
-    def sync_to_schedule(self):
-        """Synchronize bus position along its route according to current real-world time of day."""
+    def sync_to_schedule(self, simulation_time: datetime | None = None):
+        """Place the bus deterministically on its road shape for the service clock.
+
+        The position is derived from time, vehicle departure offset and route
+        distance. It never integrates a random heading or a straight-line hop.
+        """
         total_route_km = sum(self.segment_distances)
         if total_route_km <= 0 or len(self.route) < 2:
             return
 
-        now = datetime.now(timezone.utc)
-        # Extract vehicle numeric offset (e.g. BUS-101 -> 101, BUS-102 -> 102)
-        try:
-            digits = "".join(filter(str.isdigit, self.config.vehicle_code))
-            bus_num = int(digits) if digits else 100
-        except Exception:
-            bus_num = 100
-
-        # Cycle duration: typically 25 to 35 minutes for a city route round trip (~1800s)
-        cycle_seconds = max(1200, int((total_route_km / 25.0) * 3600))
-        seconds_now = now.hour * 3600 + now.minute * 60 + now.second
-        
-        # Offset each bus on the route so they don't bunch together (e.g. 10 minutes apart)
-        bus_offset = (bus_num * 600) % cycle_seconds
-        current_cycle_sec = (seconds_now + bus_offset) % cycle_seconds
-
-        # Half cycle: forward direction (1); second half: reverse direction (-1)
-        half_cycle = cycle_seconds / 2.0
-        if current_cycle_sec <= half_cycle:
-            self.direction = 1
-            progress_frac = current_cycle_sec / half_cycle
+        service_time = simulation_time or datetime.now(ZoneInfo("Asia/Kolkata"))
+        if service_time.tzinfo is None:
+            service_time = service_time.replace(tzinfo=ZoneInfo("Asia/Kolkata"))
         else:
+            service_time = service_time.astimezone(ZoneInfo("Asia/Kolkata"))
+
+        seconds_now = service_time.hour * 3600 + service_time.minute * 60 + service_time.second
+        schedule = get_route_schedule(self.config.route_index, self.config.vehicle_code)
+        if schedule:
+            service_start = schedule["service_start_minute"] * 60
+            service_end = schedule["service_end_minute"] * 60
+            departure_offset = schedule["departure_offset_minutes"] * 60
+            one_way_seconds = schedule["one_way_runtime_minutes"] * 60
+            terminal_dwell_seconds = schedule["terminal_layover_minutes"] * 60
+        else:
+            # Legacy non-Bikaner simulator vehicles retain a deterministic fallback.
+            service_start = 6 * 3600
+            service_end = 22 * 3600 + 30 * 60
+            departure_offset = 0
+            cruise_speed_kph = 26.0
+            one_way_seconds = max(15 * 60, (total_route_km / cruise_speed_kph) * 3600)
+            terminal_dwell_seconds = 4 * 60
+
+        if seconds_now < service_start + departure_offset or seconds_now > service_end:
+            self.direction = 1
+            self.speed = 0.0
+            self.current_segment_index = 0
+            self.distance_along_segment_km = 0.0
+            self.current_position = self.route[0]
+            self._update_heading()
+            return
+
+        cruise_speed_kph = total_route_km / (one_way_seconds / 3600)
+        round_trip_seconds = 2 * (one_way_seconds + terminal_dwell_seconds)
+        phase = (seconds_now - service_start - departure_offset) % round_trip_seconds
+
+        if phase < one_way_seconds:
+            self.direction = 1
+            progress_frac = phase / one_way_seconds
+            self.speed = cruise_speed_kph
+        elif phase < one_way_seconds + terminal_dwell_seconds:
             self.direction = -1
-            progress_frac = 1.0 - ((current_cycle_sec - half_cycle) / half_cycle)
+            progress_frac = 1.0
+            self.speed = 0.0
+        elif phase < (2 * one_way_seconds) + terminal_dwell_seconds:
+            self.direction = -1
+            progress_frac = 1.0 - ((phase - one_way_seconds - terminal_dwell_seconds) / one_way_seconds)
+            self.speed = cruise_speed_kph
+        else:
+            self.direction = 1
+            progress_frac = 0.0
+            self.speed = 0.0
 
         target_km = max(0.0, min(total_route_km, progress_frac * total_route_km))
 
-        # Walk through segment distances to locate exact position
         accumulated = 0.0
-        found = False
         for idx, seg_km in enumerate(self.segment_distances):
             if accumulated + seg_km >= target_km:
                 self.current_segment_index = idx
                 self.distance_along_segment_km = max(0.0, target_km - accumulated)
-                found = True
+                frac = 0.0 if seg_km <= 0 else self.distance_along_segment_km / seg_km
+                p1, p2 = self.route[idx], self.route[idx + 1]
+                self.current_position = (
+                    p1[0] + (p2[0] - p1[0]) * frac,
+                    p1[1] + (p2[1] - p1[1]) * frac,
+                )
                 break
             accumulated += seg_km
-
-        if not found:
+        else:
             self.current_segment_index = max(0, len(self.route) - 2)
-            self.distance_along_segment_km = 0.0
-
-        self.speed = random.uniform(22.0, 36.0)
+            self.distance_along_segment_km = self.segment_distances[-1]
+            self.current_position = self.route[-1]
         self._update_heading()
         
     @staticmethod
@@ -134,24 +170,12 @@ class VehicleSimulator:
                     
         return new_route, stops, target_speeds
 
-    def tick(self) -> dict:
+    def tick(self, simulation_time: datetime | None = None) -> dict:
         """Generate one telemetry payload."""
         self.seq += 1
-        
+        self.sync_to_schedule(simulation_time)
         self._update_battery()
-        
-        if self.charging:
-            self.speed = 0.0
-        elif self.stop_timer > 0:
-            self.stop_timer -= INTERVAL_SECONDS
-            self.speed = self.speed * 0.7  # decelerate smoothly
-        else:
-            target_speed = self.target_speeds[self.current_segment_index]
-            self.speed = self.speed * 0.7 + target_speed * 0.3  # Smooth EMA
-            
-            distance_to_travel = (self.speed / 3600.0) * INTERVAL_SECONDS
-            self._move(distance_to_travel)
-            
+
         lat, lng = self._get_current_pos()
         
         return {
@@ -215,6 +239,8 @@ class VehicleSimulator:
         self._update_heading()
 
     def _get_current_pos(self):
+        if self.current_position:
+            return self.current_position
         if len(self.route) < 2:
             return self.route[0]
             

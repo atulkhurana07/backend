@@ -1,4 +1,5 @@
 import asyncio
+import argparse
 import sys
 import os
 import math
@@ -16,6 +17,7 @@ from app.models.telemetry import TelemetryLatest
 from app.models.vehicle_route import VehicleRoute
 from app.models.department import Department
 from sqlalchemy import select
+from simulator.route_shapes import get_bikaner_geojson
 
 def interpolate_points(p1, p2, num_steps=10):
     """Linearly interpolate between two (lat, lng) points."""
@@ -102,7 +104,7 @@ BIKANER_ROUTE_PATHS = {
     ]
 }
 
-async def seed_geometries_and_buses():
+async def seed_geometries_and_buses(geometry_only: bool = False):
     print("[*] Seeding high-resolution GeoJSON geometries for Bikaner transit routes...")
     async with AsyncSessionLocal() as db:
         for code, raw_waypoints in BIKANER_ROUTE_PATHS.items():
@@ -112,14 +114,22 @@ async def seed_geometries_and_buses():
                 print(f"[!] Route {code} not found, skipping.")
                 continue
 
-            dense_pts = build_dense_route(raw_waypoints, steps_per_segment=10)
-            # GeoJSON coordinates format: [lng, lat]
-            geojson_coords = [[lng, lat] for lat, lng in dense_pts]
-            route.geometry = {
-                "type": "LineString",
-                "coordinates": geojson_coords
-            }
-            print(f"[+] Updated route {code} geometry with {len(geojson_coords)} waypoints.")
+            road_geometry = get_bikaner_geojson(code)
+            if road_geometry:
+                route.geometry = road_geometry
+                print(f"[+] Updated route {code} with {len(road_geometry['coordinates'])} road-snapped points.")
+            else:
+                dense_pts = build_dense_route(raw_waypoints, steps_per_segment=10)
+                geojson_coords = [[lng, lat] for lat, lng in dense_pts]
+                route.geometry = {"type": "LineString", "coordinates": geojson_coords}
+                print(f"[!] {code}: cached road shape unavailable; used {len(geojson_coords)} fallback points.")
+
+        # Commit route shapes as an isolated transaction. Live telemetry writes
+        # must never be able to roll back a successful geometry publication.
+        await db.commit()
+        if geometry_only:
+            print("[SUCCESS] Road-snapped Bikaner route geometries published.")
+            return
 
         # Ensure Department
         dept_res = await db.execute(select(Department).where(Department.code == "TRANSIT_BKN"))
@@ -234,4 +244,11 @@ async def seed_geometries_and_buses():
         print("[SUCCESS] All Bikaner route geometries, buses, devices, and telemetry initialized.")
 
 if __name__ == "__main__":
-    asyncio.run(seed_geometries_and_buses())
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--geometry-only",
+        action="store_true",
+        help="Publish route shapes without touching buses or live telemetry.",
+    )
+    args = parser.parse_args()
+    asyncio.run(seed_geometries_and_buses(geometry_only=args.geometry_only))

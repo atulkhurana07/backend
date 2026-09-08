@@ -113,6 +113,12 @@ async def get_simulation_status():
     from app.services.simulation_service import simulation_manager
     return simulation_manager.get_status()
 
+@router.get("/simulation/schedule")
+async def get_simulation_schedule():
+    """Return the sourced proposed network and clearly labelled scenario timetable."""
+    from simulator.schedules import get_public_plan
+    return get_public_plan()
+
 @router.post("/simulation/toggle")
 async def toggle_simulation(enable: Optional[bool] = None):
     from app.services.simulation_service import simulation_manager
@@ -127,3 +133,15 @@ async def toggle_simulation(enable: Optional[bool] = None):
         simulation_manager.stop()
     return simulation_manager.get_status()
 
+@router.post("/simulation/clock")
+async def set_simulation_clock(time: Optional[str] = None, reset: bool = False):
+    """Set a demo service time or reset the simulator to the live IST clock."""
+    from app.services.simulation_service import simulation_manager
+    if reset:
+        return simulation_manager.reset_clock()
+    if not time:
+        raise HTTPException(status_code=422, detail="time is required in HH:MM format")
+    try:
+        return simulation_manager.set_clock(time)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
