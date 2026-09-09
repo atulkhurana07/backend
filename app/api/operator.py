@@ -19,7 +19,7 @@ OPERATOR_ROLES = (UserRole.PLATFORM_ADMIN, UserRole.DEPARTMENT_ADMIN, UserRole.D
 
 @router.get("/vehicles", response_model=list[VehicleWithTelemetryResponse])
 async def list_vehicles(
-    limit: int = Query(100, le=500),
+    limit: int = Query(100, le=1000),
     offset: int = Query(0, ge=0),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_roles(*OPERATOR_ROLES)),
